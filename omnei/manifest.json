@@ -1,0 +1,52 @@
+{
+  "name": "OMNEI Pro - Ultimate Multi-Session & Antidetect Manager",
+  "description": "Nền tảng quản lý phiên đa tài khoản, Antidetect mini, gán Proxy độc lập, Live/Die Checker và chia sẻ phiên đội nhóm mã hóa AES-GCM.",
+  "version": "5.0.0",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon_48.png",
+    "128": "icon_128.png"
+  },
+  "permissions": [
+    "cookies",
+    "tabs",
+    "activeTab",
+    "storage",
+    "scripting",
+    "browsingData",
+    "declarativeNetRequest",
+    "proxy",
+    "privacy",
+    "webRequest",
+    "webRequestAuthProvider"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_title": "OMNEI Pro",
+    "default_icon": "icon_128.png",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.facebook.com/*",
+        "https://*.tiktok.com/*",
+        "https://*.shopee.vn/*",
+        "https://*.shopee.com/*",
+        "https://*.twitter.com/*",
+        "https://*.x.com/*"
+      ],
+      "js": ["omnei-shield.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "incognito": "spanning",
+  "manifest_version": 3
+}

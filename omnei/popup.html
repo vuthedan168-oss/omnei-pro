@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>OMNEI Pro - Ultimate Multi-Session & Antidetect Manager</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="jquery.min.js"></script>
+  <script src="crypto-utils.js"></script>
+  <script src="popup.js"></script>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-wrapper">
+        <img src="brand_logo.png" alt="OMNEI Logo" class="brand-logo">
+        <div class="brand-text-block">
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <span class="brand-name">OMNEI</span>
+            <span class="pro-badge" id="header_license_badge">PRO</span>
+          </div>
+          <div class="brand-slogan">LÀM CHỦ THỜI GIAN • BỨT PHÁ GIỚI HẠN</div>
+        </div>
+      </div>
+      <div class="header-status">
+        <span id="header_status_dot" class="status-dot"></span>
+        <span id="header_active_uid" style="font-weight: 600; color: #38bdf8;">Chưa đăng nhập</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="tab_accounts" title="Danh sách tài khoản">
+        <span>👥 Quản Lý</span>
+        <span id="tab_acc_count" class="tab-badge">0</span>
+      </button>
+      <button class="nav-tab" data-tab="tab_tools" title="Công cụ cookie & tiện ích">
+        <span>⚡ Tiện Ích</span>
+      </button>
+      <button class="nav-tab" data-tab="tab_shield" title="Chống checkpoint & vân tay">
+        <span>🛡️ Shield</span>
+      </button>
+      <button class="nav-tab" data-tab="tab_team" title="Chia sẻ đội nhóm">
+        <span>🔗 Team</span>
+      </button>
+      <button class="nav-tab" data-tab="tab_license" title="Bản quyền thương mại">
+        <span>💎 Bản Quyền</span>
+      </button>
+      <button class="nav-tab" data-tab="tab_settings" title="Cài đặt hệ thống">
+        <span>⚙️ Cài Đặt</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- TAB 1: ACCOUNTS LIST -->
+  <section id="tab_accounts" class="tab-content active">
+    <!-- Free Tier Quota Reminder Banner -->
+    <div id="tab1_quota_banner" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-sm); padding: 5px 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+      <div>
+        <span style="color: #94a3b8;">Dung lượng: </span>
+        <strong id="tab1_quota_text" style="color: #fbbf24;">0/2 Tài Khoản (Gói Free)</strong>
+      </div>
+      <button id="btn_tab1_upgrade" class="btn btn-warning btn-xs" style="padding: 2px 7px; font-size: 10px; font-weight: 700;">⚡ Nâng Cấp (5k/acc)</button>
+    </div>
+
+    <!-- Platform Filter Bar -->
+    <div class="platform-filter-bar">
+      <button class="platform-chip active" data-platform="all">🌐 Tất Cả</button>
+      <button class="platform-chip" data-platform="facebook">🔵 Meta (FB)</button>
+      <button class="platform-chip" data-platform="tiktok">🎵 TikTok</button>
+      <button class="platform-chip" data-platform="shopee">🟠 Shopee</button>
+      <button class="platform-chip" data-platform="x">🐦 X/Twitter</button>
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="acc_search_input" class="search-input" placeholder="Tìm kiếm theo Tên, UID, Proxy hoặc Nền tảng...">
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button id="btn_check_all_live" class="btn btn-secondary btn-sm" title="Kiểm tra Live/Die toàn bộ nick">
+        🔄 Check Live
+      </button>
+      <div style="display: flex; gap: 4px;">
+        <button id="btn_new_fb_login" class="btn btn-secondary btn-sm" title="Dọn sạch phiên cũ để đăng nhập nick mới">
+          ➕ Đăng nhập mới
+        </button>
+        <button id="btn_clean_logout" class="btn btn-danger btn-sm" title="Đăng xuất và xóa sạch cache trình duyệt">
+          🚪 Thoát sạch
+        </button>
+      </div>
+    </div>
+
+    <!-- Account Cards Container -->
+    <div id="account_list" class="account-list">
+      <!-- Dynamic account cards will be inserted here -->
+    </div>
+
+    <div id="account_empty_state" class="empty-state" style="display: none;">
+      <div class="empty-icon">📂</div>
+      <p style="font-size: 13px; font-weight: 600; color: #fff;">Chưa có tài khoản nào</p>
+      <p style="font-size: 11px; margin-top: 4px;">Hãy đăng nhập mạng xã hội trên trình duyệt hoặc dán cookie ở tab Tiện ích.</p>
+    </div>
+  </section>
+
+  <!-- TAB 2: TOOLS & COOKIE -->
+  <section id="tab_tools" class="tab-content">
+    <!-- Current Cookie -->
+    <div class="form-group">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <label class="form-label" style="margin-bottom: 0;">Cookie Tab Hiện Tại (<span id="CurrentCookieUrl" style="color: #38bdf8;">--</span>):</label>
+        <button id="btn_copy_current_cookie" class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size: 10px;">📋 Copy</button>
+      </div>
+      <textarea id="cookieresult" class="form-textarea" rows="3" placeholder="Cookie của tab hiện tại sẽ xuất hiện ở đây..."></textarea>
+    </div>
+
+    <div class="action-bar" style="margin-bottom: 12px;">
+      <button id="btncookieimport" class="btn btn-primary" style="flex: 1;">📥 Import Cookie Này</button>
+      <button id="btncookiesave" class="btn btn-secondary" style="flex: 1;">💾 Lưu Vào List</button>
+    </div>
+
+    <!-- Smart Bulk Import (Parser 6-in-1 for raw accounts from shop) -->
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <h4 style="font-size: 12px; font-weight: 700; color: #38bdf8; margin: 0;">⚡ SMART BULK IMPORT (SHOP VIA / CLONE / TIKTOK / SHOPEE)</h4>
+      </div>
+      <p style="font-size: 10.5px; color: var(--text-muted); margin: 0 0 6px 0;">Dán nhiều dòng dạng <code>UID|PASS|2FA|COOKIE</code>, JSON, hoặc cookie raw của Facebook, TikTok, Shopee. Hệ thống tự nhận diện thông minh.</p>
+      <textarea id="bulk_import_input" class="form-textarea" rows="3" placeholder="Ví dụ Facebook:
+100082348234|MatKhau123|JBSWY3DPEHPK3PXP|sb=...;c_user=...
+Ví dụ TikTok / Shopee:
+user1|pass123|sessionid=..."></textarea>
+      <div style="display: flex; gap: 6px; margin-top: 6px;">
+        <button id="btn_smart_bulk_import" class="btn btn-primary btn-sm" style="flex: 1;">🚀 Phân Tích & Thêm Vào List</button>
+        <button id="btn_clear_bulk_input" class="btn btn-secondary btn-sm">Xóa</button>
+      </div>
+    </div>
+
+    <!-- Meta Quick Hub (1-Click Shortcuts for Active Session) -->
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <h4 style="font-size: 12px; font-weight: 700; color: #fbbf24; margin: 0 0 6px 0;">🎯 META & SOCIAL QUICK HUB (TRUY CẬP NHANH 1-CLICK)</h4>
+      <p style="font-size: 10.5px; color: var(--text-muted); margin: 0 0 8px 0;">Mở thẳng các công cụ quản trị cho phiên đang hoạt động:</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <button id="btn_hub_ads" class="btn btn-secondary btn-sm" style="font-size: 11px;">📊 Ads Manager</button>
+        <button id="btn_hub_bm" class="btn btn-secondary btn-sm" style="font-size: 11px;">🏢 Business Suite</button>
+        <button id="btn_hub_quality" class="btn btn-secondary btn-sm" style="font-size: 11px;">🛡️ Chất Lượng TK</button>
+        <button id="btn_hub_security" class="btn btn-secondary btn-sm" style="font-size: 11px;">🔐 Đổi Pass / Bảo Mật</button>
+      </div>
+    </div>
+
+    <!-- Backup & Restore Personal Data -->
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <h4 style="font-size: 12px; font-weight: 700; color: #34d399; margin: 0 0 6px 0;">💾 SAO LƯU & KHÔI PHỤC TOÀN BỘ (JSON)</h4>
+      <p style="font-size: 10.5px; color: var(--text-muted); margin: 0 0 8px 0;">Lưu trữ mã hóa an toàn vào máy tính cá nhân hoặc chuyển sang máy khác:</p>
+      <div style="display: flex; gap: 6px;">
+        <button id="btn_export_backup_json" class="btn btn-secondary btn-sm" style="flex: 1;">💾 Xuất File Backup</button>
+        <button id="btn_trigger_restore_json" class="btn btn-secondary btn-sm" style="flex: 1;">📥 Khôi Phục File</button>
+        <input type="file" id="input_restore_file" accept=".json" style="display: none;">
+      </div>
+    </div>
+
+    <!-- Supplemental Tools -->
+    <div style="border-top: 1px dashed var(--border-color); padding-top: 10px;">
+      <label class="form-label">Công Cụ Bổ Trợ:</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+        <button id="btngettoken" class="btn btn-secondary btn-sm">🔑 Token Business</button>
+        <button id="btnExportCookie" class="btn btn-secondary btn-sm">📤 Xuất Cookies TXT</button>
+      </div>
+
+      <div style="display: flex; gap: 6px;">
+        <input type="text" id="GetUidFromUrl" class="form-input" placeholder="Dán link Facebook để lấy UID..." style="flex: 1;">
+        <button id="btngetidfromlink" class="btn btn-secondary btn-sm">Lấy UID</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: ANTIDETECT SHIELD -->
+  <section id="tab_shield" class="tab-content">
+    <div class="shield-banner" style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="brand_logo.png" style="width: 38px; height: 38px; border-radius: 50%; border: 1px solid #38bdf8;" alt="Shield">
+        <div>
+          <h4 style="font-size: 13px; font-weight: 800; color: #38bdf8; margin: 0;">OMNEI ANTIDETECT SHIELD</h4>
+          <p style="font-size: 10.5px; color: #94a3b8; margin: 2px 0 0 0;">Bộ lọc vân tay phần cứng chuyên sâu • Triệt tiêu nguy cơ Checkpoint</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <h4 style="font-size: 12px; font-weight: 700; color: #fbbf24; margin: 0 0 8px 0;">⚙️ BỘ LỌC VÂN TAY (IN-BROWSER FINGERPRINT NOISE)</h4>
+      
+      <label class="checkbox-row" style="margin-bottom: 8px;">
+        <input type="checkbox" id="shield_canvas_toggle" checked>
+        <div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #fff;">Canvas Fingerprint Randomizer</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Trộn vi nhiễu vào hình ảnh Canvas để mỗi tài khoản có vân tay độc lập.</div>
+        </div>
+      </label>
+
+      <label class="checkbox-row" style="margin-bottom: 8px;">
+        <input type="checkbox" id="shield_webgl_toggle" checked>
+        <div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #fff;">WebGL Hardware GPU Masking</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Che giấu GPU thật, giả lập card đồ họa rời NVIDIA GeForce tiêu chuẩn.</div>
+        </div>
+      </label>
+
+      <label class="checkbox-row" style="margin-bottom: 8px;">
+        <input type="checkbox" id="shield_audio_toggle" checked>
+        <div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #fff;">AudioContext Micro-Jitter</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Chống thuật toán nhận diện sóng âm phần cứng của trình duyệt.</div>
+        </div>
+      </label>
+
+      <label class="checkbox-row" style="margin-bottom: 8px;">
+        <input type="checkbox" id="shield_webrtc_toggle" checked>
+        <div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #fff;">WebRTC Anti-Leak Shield</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Chặn rò rỉ địa chỉ IP thật của máy qua giao thức UDP khi dùng Proxy.</div>
+        </div>
+      </label>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="shield_bot_toggle" checked>
+        <div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #fff;">Anti-Bot / Hide Webdriver Flag</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Triệt tiêu cờ tự động hóa để Meta & TikTok xem bạn là 100% người dùng thật.</div>
+        </div>
+      </label>
+    </div>
+
+    <div class="info-card">
+      💡 <strong>Lợi ích vượt trội:</strong> Nuôi hàng chục tài khoản trên cùng 1 máy tính an toàn như dùng các trình duyệt Antidetect đắt tiền, nhưng mượt mà và nhẹ nhàng gấp 10 lần!
+    </div>
+  </section>
+
+  <!-- TAB 4: TEAM SHARE -->
+  <section id="tab_team" class="tab-content">
+    <div class="info-card">
+      💡 <strong>Chia Sẻ Đội Nhóm Không Lộ Mật Khẩu:</strong> Nhân viên chỉ cần dán mã chia sẻ để vào thẳng nick. <strong>Không bao giờ lộ pass</strong> hay 2FA, mã hóa đầu cuối AES-GCM-256.
+    </div>
+
+    <!-- Section: Generate Single Code -->
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <h4 style="font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 8px;">📤 TẠO MÃ 1 TÀI KHOẢN (CHỦ SHOP / LEADER)</h4>
+      <div class="form-group">
+        <label class="form-label">Chọn tài khoản muốn chia sẻ:</label>
+        <select id="share_select_account" class="form-select"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mật khẩu bảo vệ (Tùy chọn):</label>
+        <input type="password" id="share_pass" class="form-input" placeholder="Để trống nếu không cần mật khẩu riêng...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Thời hạn mã:</label>
+        <select id="share_expiry" class="form-select">
+          <option value="24">24 giờ (1 ngày)</option>
+          <option value="72">3 ngày</option>
+          <option value="168">7 ngày</option>
+          <option value="0">Vĩnh viễn (Không hết hạn)</option>
+        </select>
+      </div>
+      <button id="btn_generate_share_code" class="btn btn-primary" style="width: 100%;">Tạo Mã Chia Sẻ Mã Hóa</button>
+
+      <div id="share_result_box" style="display: none; margin-top: 10px;">
+        <label class="form-label" style="color: #34d399;">Mã Chia Sẻ Đã Tạo (Gửi mã này cho nhân viên):</label>
+        <textarea id="share_code_output" class="form-textarea" rows="2" readonly></textarea>
+        <button id="btn_copy_share_code" class="btn btn-success btn-sm" style="width: 100%; margin-top: 4px;">📋 Sao Chép Mã</button>
+      </div>
+    </div>
+
+    <!-- Section: Generate Bundle Code -->
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <h4 style="font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 8px;">📦 TẠO GÓI CHIA SẺ NHIỀU NICK (ENTERPRISE BUNDLE)</h4>
+      <p style="font-size: 10.5px; color: var(--text-muted); margin: 0 0 8px 0;">Xuất toàn bộ dàn nick cho nhân viên chỉ trong 1 mã duy nhất, hỗ trợ khóa trích xuất cookie.</p>
+      
+      <label class="checkbox-row" style="margin-bottom: 8px;">
+        <input type="checkbox" id="bundle_staff_mode" checked>
+        <div>
+          <span style="font-size: 11px; font-weight: 600; color: #fff;">Chế độ nhân viên (Staff Protection Mode)</span>
+          <div style="font-size: 9.5px; color: var(--text-muted);">Khóa nút copy raw cookie, nhân viên chỉ được click đăng nhập làm việc.</div>
+        </div>
+      </label>
+
+      <button id="btn_generate_bundle_code" class="btn btn-secondary btn-sm" style="width: 100%; border-color: rgba(251, 191, 36, 0.4); color: #fbbf24;">📦 Tạo Mã Gói Toàn Bộ Tài Khoản</button>
+
+      <div id="bundle_result_box" style="display: none; margin-top: 8px;">
+        <textarea id="bundle_code_output" class="form-textarea" rows="2" readonly></textarea>
+        <button id="btn_copy_bundle_code" class="btn btn-success btn-sm" style="width: 100%; margin-top: 4px;">📋 Sao Chép Mã Gói</button>
+      </div>
+    </div>
+
+    <!-- Section: Import Code -->
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+      <h4 style="font-size: 12px; font-weight: 700; color: #a855f7; margin-bottom: 8px;">📥 NHẬP MÃ CHIA SẺ (NHÂN VIÊN)</h4>
+      <div class="form-group">
+        <textarea id="import_share_code_input" class="form-textarea" rows="2" placeholder="Dán mã OMNEISHARE:... được gửi vào đây"></textarea>
+      </div>
+      <div class="form-group">
+        <input type="password" id="import_share_pass" class="form-input" placeholder="Mật khẩu mã hóa (nếu trưởng nhóm cài đặt)...">
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button id="btn_import_share_and_save" class="btn btn-secondary" style="flex: 1;">Lưu Vào List</button>
+        <button id="btn_import_share_and_login" class="btn btn-primary" style="flex: 1;">🚀 Vào Nick Luôn</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: COMMERCIAL SAAS LICENSE & VIETQR PAYMENT -->
+  <section id="tab_license" class="tab-content">
+    <!-- Current License Card -->
+    <div style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(251, 191, 36, 0.15)); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; text-align: center;">
+      <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700;">GÓI BẢN QUYỀN HIỆN TẠI</div>
+      <div id="license_tier_display" style="font-size: 17px; font-weight: 800; color: #38bdf8; margin: 3px 0;">GÓI MIỄN PHÍ (FREE)</div>
+      <div id="license_expiry_display" style="font-size: 11px; color: #34d399; font-weight: 600;">✅ Vĩnh viễn (Trọn đời)</div>
+      
+      <!-- Account Quota Bar -->
+      <div class="quota-box" style="margin-top: 10px; margin-bottom: 0;">
+        <div class="quota-header">
+          <span>Giới hạn tài khoản:</span>
+          <span id="quota_text_display" style="font-weight: 700; color: #fbbf24;">0 / 2 Acc</span>
+        </div>
+        <div class="quota-bar-wrapper">
+          <div id="quota_bar_fill" class="quota-bar-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Machine ID -->
+      <div style="display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 8px;">
+        <span style="font-size: 10px; color: #94a3b8;">Mã thiết bị (Machine ID):</span>
+        <span id="display_machine_id" style="font-family: monospace; font-size: 11px; font-weight: 700; color: #38bdf8;">OMN-XXXX-XXXX</span>
+        <button id="btn_copy_machine_id" class="btn btn-secondary btn-xs" style="padding: 1px 5px; font-size: 9px;" title="Copy Machine ID">📋 Copy</button>
+      </div>
+    </div>
+
+    <!-- VietQR Techcombank Upgrade Section -->
+    <div class="vietqr-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+        <h4 style="font-size: 12.5px; font-weight: 800; color: #38bdf8; margin: 0;">💎 NÂNG CẤP TÀI KHOẢN (5.000đ / ACC)</h4>
+        <span style="font-size: 9.5px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 1px 6px; border-radius: 10px; font-weight: 700;">VietQR 24/7</span>
+      </div>
+      <p style="font-size: 10.5px; color: #94a3b8; margin: 0 0 10px 0;">Gói Free tối đa <strong>2 tài khoản</strong>. Từ 3 tài khoản trở lên, chỉ <strong>5.000 VNĐ / 1 tài khoản</strong> quét mã QR Techcombank bên dưới:</p>
+
+      <!-- Package Selector -->
+      <div class="plan-grid">
+        <div class="plan-chip active" data-accounts="3" data-price="5000">
+          <div class="plan-chip-name">Gói 3 Acc (+1 thêm)</div>
+          <div class="plan-chip-price">5.000 đ</div>
+        </div>
+        <div class="plan-chip" data-accounts="5" data-price="15000">
+          <div class="plan-chip-name">Gói 5 Acc (+3 thêm)</div>
+          <div class="plan-chip-price">15.000 đ</div>
+        </div>
+        <div class="plan-chip" data-accounts="10" data-price="40000">
+          <div class="plan-chip-name">Gói 10 Acc (+8 thêm)</div>
+          <div class="plan-chip-price">40.000 đ</div>
+        </div>
+        <div class="plan-chip" data-accounts="unlimited" data-price="99000">
+          <div class="plan-chip-name">VIP Không Giới Hạn</div>
+          <div class="plan-chip-price">99.000 đ</div>
+        </div>
+      </div>
+
+      <!-- Custom Acc Input -->
+      <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 10px;">
+        <label style="font-size: 10.5px; color: #cbd5e1; white-space: nowrap;">Hoặc nhập số acc muốn mua:</label>
+        <input type="number" id="input_custom_accs" min="3" max="500" value="3" class="form-input" style="padding: 3px 6px; font-size: 11px; width: 65px; text-align: center;">
+        <button id="btn_calc_custom_acc" class="btn btn-secondary btn-xs" style="padding: 4px 8px;">Tính tiền</button>
+      </div>
+
+      <!-- VietQR Image Display -->
+      <div class="vietqr-image-wrapper">
+        <img src="qr_payment.png" id="img_vietqr_code" class="vietqr-image" alt="Techcombank VietQR Code">
+      </div>
+
+      <!-- Payment Details Box -->
+      <div style="margin-top: 10px;">
+        <div class="copy-info-row">
+          <span style="color: #94a3b8;">Ngân hàng:</span>
+          <span class="copy-info-val" style="color: #ef4444; font-weight: 800;">TECHCOMBANK (VietQR)</span>
+        </div>
+        <div class="copy-info-row">
+          <span style="color: #94a3b8;">Số tiền cần chuyển:</span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span id="qr_pay_amount" class="copy-info-val" style="color: #fbbf24;">5,000 VNĐ</span>
+            <button id="btn_copy_pay_amount" class="btn btn-secondary btn-xs" style="padding: 1px 5px; font-size: 9px;">Copy</button>
+          </div>
+        </div>
+        <div class="copy-info-row">
+          <span style="color: #94a3b8;">Nội dung chuyển khoản:</span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span id="qr_pay_memo" class="copy-info-val" style="color: #38bdf8;">OMNEI OMN-XXXX 3ACC</span>
+            <button id="btn_copy_pay_memo" class="btn btn-secondary btn-xs" style="padding: 1px 5px; font-size: 9px;">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Confirmation Button -->
+      <div style="margin-top: 10px;">
+        <button id="btn_confirm_transferred" class="btn btn-primary" style="width: 100%; font-size: 12px; font-weight: 700; padding: 9px;">
+          ✅ TÔI ĐÃ CHUYỂN KHOẢN - GỬI XÁC NHẬN CHO ADMIN
+        </button>
+      </div>
+
+      <!-- Post-transfer Request Details Box (Hidden by default, shown after confirmation) -->
+      <div id="transfer_request_box" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-sm); padding: 10px; margin-top: 10px;">
+        <div style="font-size: 11px; font-weight: 700; color: #34d399; margin-bottom: 4px;">
+          🎉 Đã ghi nhận yêu cầu nâng cấp!
+        </div>
+        <p style="font-size: 10px; color: #cbd5e1; margin-bottom: 6px; line-height: 1.4;">
+          Sao chép Mã Yêu Cầu bên dưới gửi cho Admin qua Zalo/Telegram để được duyệt mở gói:
+        </p>
+        <div class="copy-info-row" style="background: rgba(0,0,0,0.5);">
+          <span id="req_code_display" class="copy-info-val" style="font-size: 10.5px;">REQ-OMN-...</span>
+          <button id="btn_copy_req_code" class="btn btn-secondary btn-xs" style="padding: 1px 6px;">Copy</button>
+        </div>
+        <div style="display: flex; gap: 6px; margin-top: 6px;">
+          <button id="btn_send_admin_telegram" class="btn btn-secondary btn-xs" style="flex: 1;">💬 Nhắn Telegram Admin</button>
+          <button id="btn_copy_full_order" class="btn btn-secondary btn-xs" style="flex: 1;">📋 Copy Toàn Bộ Tin Nhắn</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- License Activation Box -->
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <h4 style="font-size: 12px; font-weight: 700; color: #fbbf24; margin: 0 0 6px 0;">🔑 KÍCH HOẠT KEY TỪ ADMIN</h4>
+      <p style="font-size: 10.5px; color: var(--text-muted); margin: 0 0 8px 0;">Dán mã License Key bạn nhận được từ Admin để mở khóa gói tài khoản ngay:</p>
+      <div class="form-group" style="margin-bottom: 8px;">
+        <input type="text" id="license_key_input" class="form-input" placeholder="Ví dụ: OMNEI-PRO-10ACC-LIFE-..." style="font-family: monospace; font-size: 11px; text-transform: uppercase;">
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button id="btn_activate_license" class="btn btn-primary" style="flex: 1;">🚀 Kích Hoạt Key</button>
+      </div>
+      <div id="license_feedback_msg" style="font-size: 11px; margin-top: 6px; text-align: center; display: none;"></div>
+    </div>
+
+    <!-- Admin Approval & Key Generator Suite (Secret Access for Owner) -->
+    <div class="admin-suite-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11px; font-weight: 700; color: #fbbf24;">👑 KHU VỰC QUẢN TRỊ VIÊN (CHỦ TOOL)</span>
+        <button id="btn_toggle_admin_suite" class="btn btn-secondary btn-xs" style="font-size: 10px;">Mở Quản Trị</button>
+      </div>
+
+      <div id="admin_suite_panel" style="display: none; margin-top: 10px; border-top: 1px dashed rgba(245, 158, 11, 0.3); padding-top: 10px;">
+        <!-- Admin PIN Unlock Form -->
+        <div id="admin_pin_form">
+          <label style="font-size: 10.5px; color: #cbd5e1; display: block; margin-bottom: 4px;">Nhập mã PIN Admin để quản trị (Mặc định: 888888):</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="password" id="admin_pin_input" class="form-input" placeholder="Nhập PIN..." style="font-size: 11px;">
+            <button id="btn_admin_verify_pin" class="btn btn-warning btn-xs">Xác Thực</button>
+          </div>
+        </div>
+
+        <!-- Admin Authorized Suite Controls -->
+        <div id="admin_authorized_controls" style="display: none;">
+          <div style="font-size: 11px; color: #34d399; font-weight: 700; margin-bottom: 6px;">✅ Chế độ Quản Trị Viên kích hoạt</div>
+          
+          <!-- 1-Click Self Unlock Button -->
+          <button id="btn_admin_instant_unlock" class="btn btn-success btn-xs" style="width: 100%; margin-bottom: 10px; font-weight: 700;">
+            ⚡ Phê Duyệt & Mở Khóa VIP Trọn Đời Cho Máy Này
+          </button>
+
+          <!-- Key Generator For Customers -->
+          <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: var(--radius-sm);">
+            <div style="font-size: 10.5px; font-weight: 700; color: #38bdf8; margin-bottom: 4px;">Tạo Key Cấp Cho Khách Hàng:</div>
+            <div class="form-group" style="margin-bottom: 6px;">
+              <input type="text" id="admin_target_machine_id" class="form-input" placeholder="Dán Machine ID khách (hoặc để trống cấp tự do)" style="font-size: 10.5px; font-family: monospace;">
+            </div>
+            <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+              <select id="admin_license_acc_select" class="form-select" style="font-size: 10.5px; flex: 1;">
+                <option value="3">Gói 3 Acc</option>
+                <option value="5">Gói 5 Acc</option>
+                <option value="10" selected>Gói 10 Acc</option>
+                <option value="20">Gói 20 Acc</option>
+                <option value="50">Gói 50 Acc</option>
+                <option value="100">Gói 100 Acc</option>
+                <option value="UNLIMITED">VIP Không Giới Hạn</option>
+              </select>
+              <button id="btn_admin_generate_key" class="btn btn-primary btn-xs" style="flex: 1;">⚡ Sinh Key</button>
+            </div>
+            <div id="admin_generated_key_box" style="display: none;">
+              <textarea id="admin_generated_key_result" class="form-textarea" rows="2" readonly style="font-size: 10px;"></textarea>
+              <button id="btn_admin_copy_key" class="btn btn-secondary btn-xs" style="width: 100%; margin-top: 4px;">📋 Copy Key Gửi Khách</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 6: SETTINGS & TELEGRAM -->
+  <section id="tab_settings" class="tab-content">
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="font-size: 12px; font-weight: 700; color: #38bdf8; margin: 0;">🤖 ĐỒNG BỘ TELEGRAM CLOUD</h4>
+        <span id="tg_consent_badge" class="badge-consent-status badge-unverified">⚠️ Chưa Cấp Quyền</span>
+      </div>
+
+      <!-- Consent Status Banner -->
+      <div id="tg_consent_status_banner" class="consent-alert-box unverified-box" style="margin-bottom: 10px;">
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <span style="font-size: 16px;" id="tg_consent_icon">🛡️</span>
+          <div style="flex: 1;">
+            <div id="tg_consent_banner_title" style="font-size: 11px; font-weight: 700; color: #fbbf24; margin-bottom: 2px;">YÊU CẦU ỦY QUYỀN BẢO MẬT</div>
+            <div id="tg_consent_banner_desc" style="font-size: 10.5px; color: #cbd5e1; line-height: 1.35;">Để bảo vệ tài khoản và tuân thủ tiêu chuẩn an toàn, tính năng tự động gửi cookie chỉ hoạt động khi bạn xác nhận đồng ý cấp quyền.</div>
+          </div>
+        </div>
+        <div style="margin-top: 8px; display: flex; gap: 6px;">
+          <button id="btn_open_tg_consent" class="btn btn-warning btn-xs" style="flex: 1;">📋 Xem & Xác Nhận Cấp Quyền</button>
+          <button id="btn_tg_revoke_consent" class="btn btn-secondary btn-xs" style="display: none; color: #f87171;">🚫 Hủy Cấp Quyền</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bot Token:</label>
+        <input type="password" id="tg_token" class="form-input" placeholder="123456:ABC-DEF...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chat ID (User hoặc Group):</label>
+        <input type="text" id="tg_chat_id" class="form-input" placeholder="-100xxxxxxxxx hoặc xxxxxxxx">
+      </div>
+
+      <label class="checkbox-row" style="margin-top: 6px; padding: 6px; background: rgba(0,0,0,0.15); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+        <input type="checkbox" id="tg_auto_send">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="font-size: 11.5px; font-weight: 600; color: #fff;">Tự động gửi Telegram khi có đăng nhập mới</span>
+            <span id="tg_auto_send_tag" style="font-size: 9.5px; padding: 1px 4px; border-radius: 3px; background: rgba(245, 158, 11, 0.2); color: #fbbf24;">Cần cấp quyền</span>
+          </div>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 1px;">Chỉ gửi 1 lần duy nhất cho mỗi phiên đăng nhập (Chống checkpoint)</div>
+        </div>
+      </label>
+
+      <div style="display: flex; gap: 6px; margin-top: 10px;">
+        <button id="tg_btn_test" class="btn btn-secondary btn-sm" style="flex: 1;">Kiểm Tra Kết Nối</button>
+        <button id="tg_btn_send_now" class="btn btn-primary btn-sm" style="flex: 1;">Gửi Cookie Hiện Tại</button>
+      </div>
+      <div id="tg_status_msg" style="font-size: 11px; margin-top: 6px; text-align: center; display: none;"></div>
+    </div>
+
+    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px;">
+      <h4 style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 8px;">⚙️ TÙY CHỌN HỆ THỐNG</h4>
+      <label class="checkbox-row">
+        <input type="checkbox" id="auto_save_fbaccount" checked>
+        <span style="font-size: 11.5px;">Tự động lưu tài khoản khi đăng nhập thành công</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="show_getuidicon" checked>
+        <span style="font-size: 11.5px;">Hiện nút lấy nhanh UID trên Facebook</span>
+      </label>
+    </div>
+
+    <div class="info-card" style="margin-bottom: 0;">
+      🔒 <strong>Bảo Mật Cục Bộ:</strong> Toàn bộ Bot Token và Proxy Credentials được mã hóa chuẩn <strong>AES-GCM-256</strong> bằng khóa phần cứng riêng của máy tính.
+    </div>
+  </section>
+
+  <!-- MODAL: PROXY & USER-AGENT SETTINGS FOR ACCOUNT -->
+  <div id="modal_proxy" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">🛡️ Cấu Hình Proxy & Antidetect</span>
+        <button class="modal-close" id="modal_proxy_close">✕</button>
+      </div>
+
+      <input type="hidden" id="proxy_modal_uid">
+
+      <div style="margin-bottom: 10px;">
+        <span style="font-size: 12px; font-weight: 600; color: #38bdf8;" id="proxy_modal_acc_name">Tài khoản</span>
+      </div>
+
+      <!-- Proxy Toggle -->
+      <label class="checkbox-row">
+        <input type="checkbox" id="proxy_enable_toggle">
+        <span style="font-weight: 600;">Kích hoạt Proxy riêng cho nick này</span>
+      </label>
+
+      <div id="proxy_inputs_wrapper" style="display: none;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 6px; margin-bottom: 8px;">
+          <div>
+            <label class="form-label">Host / IP:</label>
+            <input type="text" id="proxy_host" class="form-input" placeholder="123.45.67.89">
+          </div>
+          <div>
+            <label class="form-label">Port:</label>
+            <input type="number" id="proxy_port" class="form-input" placeholder="8080">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Giao thức:</label>
+          <select id="proxy_scheme" class="form-select">
+            <option value="http">HTTP</option>
+            <option value="https">HTTPS</option>
+            <option value="socks5">SOCKS5</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+          <div>
+            <label class="form-label">Username (nếu có):</label>
+            <input type="text" id="proxy_user" class="form-input" placeholder="user">
+          </div>
+          <div>
+            <label class="form-label">Password (nếu có):</label>
+            <input type="password" id="proxy_pass" class="form-input" placeholder="pass">
+          </div>
+        </div>
+
+        <!-- Proxy Test Button & Result -->
+        <button type="button" id="btn_test_proxy_ping" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 4px;">⚡ Kiểm Tra Ping & Vị Trí Proxy (Test Ping)</button>
+        <div id="proxy_test_result" style="display: none; font-size: 11px; padding: 6px 10px; border-radius: var(--radius-sm); margin-top: 6px; text-align: center;"></div>
+      </div>
+
+      <!-- User-Agent Input -->
+      <div class="form-group" style="border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <label class="form-label" style="margin-bottom: 0;">Khóa Vân Tay User-Agent:</label>
+          <button id="btn_reset_ua_to_default" class="btn btn-secondary btn-sm" style="padding: 1px 5px; font-size: 10px;">Dùng UA máy</button>
+        </div>
+        <textarea id="proxy_modal_ua" class="form-textarea" rows="2" placeholder="Mozilla/5.0..."></textarea>
+      </div>
+
+      <!-- 2FA & Personal Notes -->
+      <div style="border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 10px;">
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label">🔑 Khóa Bí Mật 2FA (Secret Key để tự sinh OTP):</label>
+          <input type="text" id="proxy_modal_2fa" class="form-input" placeholder="Ví dụ: JBSWY3DPEHPK3PXP...">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">📝 Ghi Chú Cá Nhân (Ghi nhớ cho riêng bạn):</label>
+          <input type="text" id="proxy_modal_note" class="form-input" placeholder="Ví dụ: Nick chính chạy ads gia dụng, ngâm 48h...">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 6px; margin-top: 12px;">
+        <button id="btn_save_proxy_settings" class="btn btn-primary" style="flex: 1;">Lưu Cấu Hình</button>
+        <button id="btn_cancel_proxy_modal" class="btn btn-secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TELEGRAM SECURITY CONSENT & DISCLAIMER -->
+  <div id="modal_tg_consent" class="modal-overlay">
+    <div class="modal-content" style="max-width: 390px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 18px;">🛡️</span>
+          <span class="modal-title" style="font-size: 13px;">ỦY QUYỀN BẢO MẬT & ĐỒNG THUẬN TELEGRAM</span>
+        </div>
+        <button class="modal-close" id="modal_tg_consent_close">✕</button>
+      </div>
+
+      <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4;">
+        Theo <strong>Tiêu chuẩn Bảo mật & Chính sách Người dùng Chrome</strong>, tiện ích không tự ý truyền tải thông tin đăng nhập ra bên ngoài máy tính trừ khi có <strong>sự đồng thuận minh bạch (Explicit Affirmative Consent)</strong> từ bạn.
+      </div>
+
+      <!-- Security Terms Box -->
+      <div class="consent-terms-box" style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 12px; max-height: 180px; overflow-y: auto; font-size: 11px; line-height: 1.45; color: #e2e8f0;">
+        <div style="color: #38bdf8; font-weight: 700; margin-bottom: 4px;">1. Tính chất dữ liệu & Cơ chế tự động hóa:</div>
+        <p style="margin: 0 0 8px 0; color: #94a3b8;">Cookie phiên đăng nhập chứa các token nhạy cảm cho phép truy cập tài khoản. Khi kích hoạt, mỗi khi phát hiện tài khoản đăng nhập mới, tiện ích sẽ gửi cookie qua kết nối HTTPS được mã hóa trực tiếp đến máy chủ Telegram Bot API (<code>api.telegram.org</code>).</p>
+
+        <div style="color: #38bdf8; font-weight: 700; margin-bottom: 4px;">2. Cam kết quyền sở hữu Bot & Quyền riêng tư:</div>
+        <p style="margin: 0 0 8px 0; color: #94a3b8;">Bạn cam kết Bot Token và Chat ID được cung cấp thuộc <strong>quyền sở hữu cá nhân hoặc tổ chức của bạn</strong>. OMNEI <strong>không lưu trữ cookie của bạn trên bất kỳ máy chủ trung gian nào khác</strong> ngoài Telegram của bạn.</p>
+
+        <div style="color: #38bdf8; font-weight: 700; margin-bottom: 4px;">3. Quyền rút lại sự đồng ý (Revoke Consent):</div>
+        <p style="margin: 0; color: #94a3b8;">Bạn có toàn quyền hủy bỏ hoặc thu hồi quyền tự động hóa bất cứ lúc nào trong tab Cài Đặt. Khi hủy, hệ thống sẽ dừng hoàn toàn việc gửi dữ liệu ngầm.</p>
+      </div>
+
+      <!-- Affirmative Checkbox -->
+      <label class="checkbox-row" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); padding: 8px; border-radius: var(--radius-sm); margin-bottom: 12px; cursor: pointer;">
+        <input type="checkbox" id="chk_tg_consent_agree">
+        <span style="font-size: 11px; font-weight: 600; color: #f8fafc; line-height: 1.35;">
+          Tôi đã đọc, hiểu rõ các rủi ro bảo mật và xác nhận ĐỒNG Ý cho phép tiện ích tự động gửi cookie về Telegram của tôi.
+        </span>
+      </label>
+
+      <div style="display: flex; gap: 8px;">
+        <button id="btn_tg_consent_decline" class="btn btn-secondary" style="flex: 1;">✕ Từ Chối</button>
+        <button id="btn_tg_consent_confirm" class="btn btn-primary" style="flex: 1.6;" disabled>🛡️ Xác Nhận & Kích Hoạt</button>
+      </div>
+    </div>
+  <!-- MODAL: UPGRADE PAYWALL (KHI VƯỢT QUÁ 2 ACC GÓI FREE) -->
+  <div id="modal_upgrade_paywall" class="modal-overlay">
+    <div class="modal-content" style="max-width: 395px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 18px;">💎</span>
+          <span class="modal-title" style="font-size: 13px; color: #fbbf24;">GIỚI HẠN GÓI MIỄN PHÍ</span>
+        </div>
+        <button class="modal-close" id="modal_upgrade_paywall_close">✕</button>
+      </div>
+
+      <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: var(--radius-sm); padding: 8px 10px; margin-bottom: 10px; font-size: 11px; color: #fca5a5; line-height: 1.4;">
+        ⚠️ <strong>Bạn đã đạt giới hạn 2 tài khoản miễn phí!</strong><br>
+        Để thêm từ <strong>3 tài khoản trở lên</strong>, vui lòng đóng <strong>5.000đ / 1 tài khoản</strong> vào mã QR Techcombank bên dưới.
+      </div>
+
+      <!-- Quick QR Card Inside Modal -->
+      <div class="vietqr-image-wrapper" style="max-width: 200px; margin: 6px auto;">
+        <img src="qr_payment.png" class="vietqr-image" alt="VietQR Techcombank">
+      </div>
+
+      <div style="font-size: 11px; margin-bottom: 8px;">
+        <div class="copy-info-row">
+          <span style="color: #94a3b8;">Ngân hàng:</span>
+          <span class="copy-info-val" style="color: #ef4444; font-weight: 800;">TECHCOMBANK</span>
+        </div>
+        <div class="copy-info-row">
+          <span style="color: #94a3b8;">Chi phí:</span>
+          <span class="copy-info-val" style="color: #fbbf24;">5,000 VNĐ / ACC THÊM</span>
+        </div>
+        <div class="copy-info-row">
+          <span style="color: #94a3b8;">Mã máy:</span>
+          <span id="modal_machine_id_display" class="copy-info-val" style="color: #38bdf8;">OMN-XXXX</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <button id="btn_modal_go_to_license" class="btn btn-primary" style="font-size: 11.5px; padding: 8px; font-weight: 700;">
+          🚀 Mở Tab Bản Quyền & Xác Nhận Nâng Cấp
+        </button>
+        <button id="btn_modal_cancel" class="btn btn-secondary btn-sm">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+</body>
+</html>

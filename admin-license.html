@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMNEI Pro - Bảng Điều Khiển Quản Trị & Cấp Bản Quyền</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --gold: #fbbf24;
+      --green: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top, #131c31 0%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 30px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .badge-admin {
+      display: inline-block;
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    p.subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+      box-shadow: none;
+    }
+
+    .result-box {
+      margin-top: 18px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 10px;
+      padding: 16px;
+      display: none;
+    }
+
+    .key-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #34d399;
+      background: #090d16;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 10px 12px;
+      border-radius: 6px;
+      word-break: break-all;
+      margin-bottom: 10px;
+      user-select: all;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .history-table th, .history-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #1f2937;
+      text-align: left;
+    }
+
+    .history-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .history-table td {
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #10b981;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="badge-admin">👑 ADMIN WORKSPACE</div>
+      <h1>OMNEI PRO LICENSE ENGINE</h1>
+      <p class="subtitle">Phê duyệt & Tạo mã bản quyền cho khách hàng (Mô hình 5.000đ/acc)</p>
+    </div>
+
+    <!-- Quick Approval Card -->
+    <div class="card">
+      <div class="card-title">⚡ DUYỆT & TẠO KEY KÍCH HOẠT</div>
+
+      <div class="form-group">
+        <label>1. Dán Mã Yêu Cầu (Request Code) HOẶC Machine ID của khách:</label>
+        <input type="text" id="input_req_or_mach" placeholder="Ví dụ: REQ-OMN-4B82-9F1A-5ACC-XXXX hoặc OMN-4B82-9F1A...">
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>2. Gói số lượng tài khoản cấp phép:</label>
+          <select id="select_acc_count">
+            <option value="3">Gói 3 Acc (5.000đ)</option>
+            <option value="5">Gói 5 Acc (15.000đ)</option>
+            <option value="10" selected>Gói 10 Acc (40.000đ)</option>
+            <option value="20">Gói 20 Acc (90.000đ)</option>
+            <option value="50">Gói 50 Acc (240.000đ)</option>
+            <option value="100">Gói 100 Acc (450.000đ)</option>
+            <option value="UNLIMITED">VIP Không Giới Hạn (Trọn Đời)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>3. Thời hạn bản quyền:</label>
+          <select id="select_duration">
+            <option value="LIFE" selected>Vĩnh Viễn (Trọn Đời)</option>
+            <option value="365">1 Năm (365 ngày)</option>
+            <option value="180">6 Tháng (180 ngày)</option>
+            <option value="30">1 Tháng (30 ngày)</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" id="btn_generate">
+        🚀 DUYỆT MỞ GÓI & TẠO KEY NGAY
+      </button>
+
+      <!-- Key Result -->
+      <div class="result-box" id="result_box">
+        <div style="font-size: 12px; font-weight: 700; color: #34d399; margin-bottom: 6px;">
+          ✅ ĐÃ TẠO LICENSE KEY THÀNH CÔNG CHO KHÁCH HÀNG:
+        </div>
+        <div class="key-display" id="key_output">OMNEI-...</div>
+        
+        <div class="grid-2">
+          <button class="btn btn-secondary" id="btn_copy_only_key">📋 Chỉ Copy Key</button>
+          <button class="btn" id="btn_copy_customer_msg">💬 Copy Tin Nhắn Gửi Khách</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Card -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div class="card-title" style="margin-bottom: 0;">📜 LỊCH SỬ CẤP KEY GẦN ĐÂY</div>
+        <button class="btn btn-secondary" id="btn_clear_history" style="width: auto; padding: 4px 10px; font-size: 11px;">Xóa Lịch Sử</button>
+      </div>
+
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Thời Gian</th>
+            <th>Machine ID</th>
+            <th>Gói Acc</th>
+            <th>License Key</th>
+          </tr>
+        </thead>
+        <tbody id="history_tbody">
+          <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Chưa có lịch sử cấp key</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Đã sao chép!</div>
+
+  <script>
+    const LICENSE_SALT = "OMNEI-COMMERCIAL-LICENSE-SALT-2026";
+
+    async function hashString(str) {
+      const enc = new TextEncoder().encode(str);
+      const hashBuf = await crypto.subtle.digest("SHA-256", enc);
+      const hashArr = Array.from(new Uint8Array(hashBuf));
+      return hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function generateLicenseKey(tier = 'PRO', maxAccounts = 10, machineId = '', durationDays = 'LIFE') {
+      const t = (tier || 'PRO').toUpperCase();
+      let accPart = 'UNLIMITED';
+      if (maxAccounts && maxAccounts !== 'UNLIMITED' && parseInt(maxAccounts, 10) < 999999) {
+        accPart = parseInt(maxAccounts, 10) + 'ACC';
+      }
+      const expiry = (durationDays === 0 || durationDays === '0' || durationDays === 'LIFETIME' || durationDays === 'LIFE') 
+        ? 'LIFE' 
+        : String(Date.now() + (parseInt(durationDays, 10) * 86400000));
+
+      let machClean = 'ANY';
+      if (machineId && machineId !== 'ANY') {
+        machClean = machineId.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      }
+
+      const rawPayload = `OMNEI:${t}:${accPart}:${expiry}:${machClean}:${LICENSE_SALT}`;
+      const fullHash = await hashString(rawPayload);
+      const sig = fullHash.substring(0, 8).toUpperCase();
+      return `OMNEI-${t}-${accPart}-${expiry.slice(0, 8)}-${machClean}-${sig}`;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
+    }
+
+    // Auto extract machine ID and account request from input
+    document.getElementById('input_req_or_mach').addEventListener('input', (e) => {
+      const val = e.target.value.trim().toUpperCase();
+      if (val.startsWith('REQ-')) {
+        // e.g. REQ-OMN-4B82-9F1A-5ACC-XXXX
+        const parts = val.split('-');
+        if (parts.length >= 4) {
+          // Detect machine ID: parts[1] + '-' + parts[2] + '-' + parts[3]
+          const mach = parts[1] + '-' + parts[2] + '-' + parts[3];
+          const accPart = parts[4];
+          if (accPart && accPart.endsWith('ACC')) {
+            const accNum = parseInt(accPart, 10);
+            if (!isNaN(accNum)) {
+              document.getElementById('select_acc_count').value = String(accNum);
+            }
+          }
+        }
+      }
+    });
+
+    let currentGeneratedKey = '';
+    let currentTargetMachine = '';
+    let currentTargetAccs = '';
+
+    document.getElementById('btn_generate').addEventListener('click', async () => {
+      let raw = document.getElementById('input_req_or_mach').value.trim().toUpperCase();
+      let mach = 'ANY';
+      let accCount = document.getElementById('select_acc_count').value;
+      const duration = document.getElementById('select_duration').value;
+
+      if (raw) {
+        if (raw.startsWith('REQ-')) {
+          const match = raw.match(/OMN-[A-Z0-9]+-[A-Z0-9]+/);
+          if (match) mach = match[0];
+          else mach = raw.replace('REQ-', '').split('-')[0];
+        } else {
+          mach = raw;
+        }
+      }
+
+      const key = await generateLicenseKey('PRO', accCount, mach, duration);
+      currentGeneratedKey = key;
+      currentTargetMachine = mach;
+      currentTargetAccs = accCount;
+
+      document.getElementById('key_output').innerText = key;
+      document.getElementById('result_box').style.display = 'block';
+
+      // Save to history
+      saveToHistory({
+        time: new Date().toLocaleTimeString('vi-VN') + ' ' + new Date().toLocaleDateString('vi-VN'),
+        mach: mach,
+        accs: accCount,
+        key: key
+      });
+      loadHistory();
+      showToast('Đã tạo Key thành công!');
+    });
+
+    document.getElementById('btn_copy_only_key').addEventListener('click', () => {
+      if (currentGeneratedKey) {
+        navigator.clipboard.writeText(currentGeneratedKey);
+        showToast('Đã copy Key!');
+      }
+    });
+
+    document.getElementById('btn_copy_customer_msg').addEventListener('click', () => {
+      if (currentGeneratedKey) {
+        const msg = `🎉 CHÀO BẠN, ĐƠN NÂNG CẤP OMNEI PRO ĐÃ ĐƯỢC DUYỆT THÀNH CÔNG!\n\n` +
+                    `📦 Gói cấp phép: ${currentTargetAccs} Tài Khoản (Vĩnh Viễn)\n` +
+                    `🔑 Mã License Key của bạn:\n${currentGeneratedKey}\n\n` +
+                    `👉 CÁCH KÍCH HOẠT:\n` +
+                    `1. Mở tiện ích OMNEI Pro -> Chọn tab [💎 Bản Quyền]\n` +
+                    `2. Dán mã key ở trên vào ô "KÍCH HOẠT KEY TỪ ADMIN"\n` +
+                    `3. Bấm "🚀 Kích Hoạt Key" là xong!\n\n` +
+                    `Cảm ơn bạn đã ủng hộ OMNEI Pro! Chúc bạn kinh doanh hồng phát!`;
+        navigator.clipboard.writeText(msg);
+        showToast('Đã sao chép tin nhắn gửi khách!');
+      }
+    });
+
+    function saveToHistory(item) {
+      let list = JSON.parse(localStorage.getItem('omnei_admin_history') || '[]');
+      list.unshift(item);
+      if (list.length > 20) list = list.slice(0, 20);
+      localStorage.setItem('omnei_admin_history', JSON.stringify(list));
+    }
+
+    function loadHistory() {
+      let list = JSON.parse(localStorage.getItem('omnei_admin_history') || '[]');
+      const tbody = document.getElementById('history_tbody');
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Chưa có lịch sử cấp key</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(item => `
+        <tr>
+          <td style="color: #94a3b8;">${item.time}</td>
+          <td style="color: #38bdf8; font-weight: 700;">${item.mach}</td>
+          <td style="color: #fbbf24;">${item.accs} ACC</td>
+          <td style="color: #34d399; font-size: 10px;">${item.key}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('btn_clear_history').addEventListener('click', () => {
+      localStorage.removeItem('omnei_admin_history');
+      loadHistory();
+      showToast('Đã xóa lịch sử!');
+    });
+
+    loadHistory();
+  </script>
+</body>
+</html>
